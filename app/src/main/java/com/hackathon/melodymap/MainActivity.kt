@@ -1,12 +1,14 @@
 package com.hackathon.melodymap
 
-
+import android.Manifest
 import android.content.Intent
-import android.net.Uri
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import com.spotify.sdk.android.auth.AuthorizationClient
 import com.spotify.sdk.android.auth.AuthorizationRequest
 import com.spotify.sdk.android.auth.AuthorizationResponse
@@ -16,19 +18,70 @@ class MainActivity : AppCompatActivity() {
     companion object {
         private const val REDIRECT_URI = "melodymap://callback"
         private const val REQUEST_CODE = 1337
+        private const val REQUEST_CODE_PERMISSIONS = 1001
+        private val REQUIRED_PERMISSIONS = arrayOf(
+            Manifest.permission.CAMERA,
+            Manifest.permission.RECORD_AUDIO,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+        )
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        // Request permissions on startup
+        if (allPermissionsGranted()) {
+            initializeApp()
+        } else {
+            requestPermissions()
+        }
+
         val loginButton = findViewById<Button>(R.id.loginButton)
         loginButton.setOnClickListener {
-            val builder = AuthorizationRequest.Builder(ConfigManager.getSpotifyClientId(), AuthorizationResponse.Type.TOKEN, REDIRECT_URI)
-            builder.setScopes(arrayOf("user-read-private", "playlist-read", "playlist-read-private"))
-            val request = builder.build()
-            AuthorizationClient.openLoginActivity(this, REQUEST_CODE, request)
+            performSpotifyLogin()
         }
+    }
+
+    private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
+        ContextCompat.checkSelfPermission(
+            baseContext, it
+        ) == PackageManager.PERMISSION_GRANTED
+    }
+
+    private fun requestPermissions() {
+        ActivityCompat.requestPermissions(
+            this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS
+        )
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int, permissions: Array<String>, grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == REQUEST_CODE_PERMISSIONS) {
+            if (allPermissionsGranted()) {
+                initializeApp()
+            } else {
+                Toast.makeText(this, "Permissions not granted by the user.", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun initializeApp() {
+        // Permissions are granted, proceed with login
+        performSpotifyLogin()
+    }
+
+    private fun performSpotifyLogin() {
+        val builder = AuthorizationRequest.Builder(
+            ConfigManager.getSpotifyClientId(),
+            AuthorizationResponse.Type.TOKEN,
+            REDIRECT_URI
+        )
+        builder.setScopes(arrayOf("user-read-private", "playlist-read", "playlist-read-private"))
+        val request = builder.build()
+        AuthorizationClient.openLoginActivity(this, REQUEST_CODE, request)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, intent: Intent?) {
@@ -41,6 +94,9 @@ class MainActivity : AppCompatActivity() {
                     // Save the access token and use it to make API calls
                     SharedPreferencesManager.saveAccessToken(this, accessToken)
                     Toast.makeText(this, "Authentication successful!", Toast.LENGTH_SHORT).show()
+                    // Navigate to VideoCaptureActivity
+                    val videoCaptureIntent = Intent(this, VideoCaptureActivity::class.java)
+                    startActivity(videoCaptureIntent)
                 }
                 AuthorizationResponse.Type.ERROR -> {
                     // Handle error
@@ -65,6 +121,9 @@ class MainActivity : AppCompatActivity() {
                     // Save the access token and use it to make API calls
                     SharedPreferencesManager.saveAccessToken(this, accessToken)
                     Toast.makeText(this, "Authentication successful!", Toast.LENGTH_SHORT).show()
+                    // Navigate to VideoCaptureActivity
+                    val videoCaptureIntent = Intent(this, VideoCaptureActivity::class.java)
+                    startActivity(videoCaptureIntent)
                 }
                 AuthorizationResponse.Type.ERROR -> {
                     // Handle error

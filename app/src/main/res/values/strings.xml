@@ -43,4 +43,7 @@
         libero vel nunc consequat, quis tincidunt nisl eleifend. Cras bibendum enim a justo luctus
         vestibulum. Fusce dictum libero quis erat maximus, vitae volutpat diam dignissim.
     </string>
+    <string name="record_button">record button</string>
+    <string name="home_button">home button</string>
+    <string name="stop_button">stop button</string>
 </resources>
