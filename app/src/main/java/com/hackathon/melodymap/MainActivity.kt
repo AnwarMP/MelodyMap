@@ -1,59 +1,80 @@
 package com.hackathon.melodymap
 
+
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
-import com.google.android.material.snackbar.Snackbar
+import android.widget.Button
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.navigation.findNavController
-import androidx.navigation.ui.AppBarConfiguration
-import androidx.navigation.ui.navigateUp
-import androidx.navigation.ui.setupActionBarWithNavController
-import android.view.Menu
-import android.view.MenuItem
-import com.hackathon.melodymap.databinding.ActivityMainBinding
+import com.spotify.sdk.android.auth.AuthorizationClient
+import com.spotify.sdk.android.auth.AuthorizationRequest
+import com.spotify.sdk.android.auth.AuthorizationResponse
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var appBarConfiguration: AppBarConfiguration
-    private lateinit var binding: ActivityMainBinding
+    companion object {
+        private const val REDIRECT_URI = "melodymap://callback"
+        private const val REQUEST_CODE = 1337
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
 
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-
-        setSupportActionBar(binding.toolbar)
-
-        val navController = findNavController(R.id.nav_host_fragment_content_main)
-        appBarConfiguration = AppBarConfiguration(navController.graph)
-        setupActionBarWithNavController(navController, appBarConfiguration)
-
-        binding.fab.setOnClickListener { view ->
-            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                .setAction("Action", null)
-                .setAnchorView(R.id.fab).show()
+        val loginButton = findViewById<Button>(R.id.loginButton)
+        loginButton.setOnClickListener {
+            val builder = AuthorizationRequest.Builder(ConfigManager.getSpotifyClientId(), AuthorizationResponse.Type.TOKEN, REDIRECT_URI)
+            builder.setScopes(arrayOf("user-read-private", "playlist-read", "playlist-read-private"))
+            val request = builder.build()
+            AuthorizationClient.openLoginActivity(this, REQUEST_CODE, request)
         }
     }
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        menuInflater.inflate(R.menu.menu_main, menu)
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        return when (item.itemId) {
-            R.id.action_settings -> true
-            else -> super.onOptionsItemSelected(item)
+    override fun onActivityResult(requestCode: Int, resultCode: Int, intent: Intent?) {
+        super.onActivityResult(requestCode, resultCode, intent)
+        if (requestCode == REQUEST_CODE) {
+            val response = AuthorizationClient.getResponse(resultCode, intent)
+            when (response.type) {
+                AuthorizationResponse.Type.TOKEN -> {
+                    val accessToken = response.accessToken
+                    // Save the access token and use it to make API calls
+                    SharedPreferencesManager.saveAccessToken(this, accessToken)
+                    Toast.makeText(this, "Authentication successful!", Toast.LENGTH_SHORT).show()
+                }
+                AuthorizationResponse.Type.ERROR -> {
+                    // Handle error
+                    Toast.makeText(this, "Authentication error: ${response.error}", Toast.LENGTH_SHORT).show()
+                }
+                else -> {
+                    // Handle other cases
+                    Toast.makeText(this, "Authentication cancelled.", Toast.LENGTH_SHORT).show()
+                }
+            }
         }
     }
 
-    override fun onSupportNavigateUp(): Boolean {
-        val navController = findNavController(R.id.nav_host_fragment_content_main)
-        return navController.navigateUp(appBarConfiguration)
-                || super.onSupportNavigateUp()
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        if (intent != null && intent.data != null) {
+            val uri = intent.data
+            val response = AuthorizationResponse.fromUri(uri)
+            when (response.type) {
+                AuthorizationResponse.Type.TOKEN -> {
+                    val accessToken = response.accessToken
+                    // Save the access token and use it to make API calls
+                    SharedPreferencesManager.saveAccessToken(this, accessToken)
+                    Toast.makeText(this, "Authentication successful!", Toast.LENGTH_SHORT).show()
+                }
+                AuthorizationResponse.Type.ERROR -> {
+                    // Handle error
+                    Toast.makeText(this, "Authentication error: ${response.error}", Toast.LENGTH_SHORT).show()
+                }
+                else -> {
+                    // Handle other cases
+                    Toast.makeText(this, "Authentication cancelled.", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
     }
 }
