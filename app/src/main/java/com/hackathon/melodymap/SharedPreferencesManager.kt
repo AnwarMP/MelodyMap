@@ -8,6 +8,7 @@ object SharedPreferencesManager {
     private const val PREF_NAME = "SpotifyPrefs"
     private const val ACCESS_TOKEN = "AccessToken"
     private const val REFRESH_TOKEN = "RefreshToken"
+    private const val KEY_USERNAME = "KeyUserName"
 
     private fun getSharedPreferences(context: Context): SharedPreferences {
         return context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
@@ -27,6 +28,15 @@ object SharedPreferencesManager {
         val editor = getSharedPreferences(context).edit()
         editor.putString(REFRESH_TOKEN, token)
         editor.apply()
+    }
+
+    fun saveUsername(context: Context, username: String) {
+        val prefs = getSharedPreferences(context)
+        prefs.edit().putString(KEY_USERNAME, username).apply()
+    }
+
+    fun getUsername(context : Context) : String? {
+        return getSharedPreferences(context).getString(KEY_USERNAME, null)
     }
 
     fun getRefreshToken(context: Context): String? {

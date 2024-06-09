@@ -5,8 +5,13 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.hackathon.melodymap.spotifyutils.SpotifyHelper
 import com.hackathon.melodymap.utils.GeminiProVision
 import com.hackathon.melodymap.utils.ResponseCallback
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class ProcessingActivity : AppCompatActivity() {
 
@@ -17,6 +22,7 @@ class ProcessingActivity : AppCompatActivity() {
     private var videoFilePath: String? = null
     private var details: String? = null
     private lateinit var geminiProVision: GeminiProVision
+    private lateinit var spotifyHelper: SpotifyHelper
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,6 +44,7 @@ class ProcessingActivity : AppCompatActivity() {
         Log.d(TAG, "Details: $details")
 
         geminiProVision = GeminiProVision()
+        spotifyHelper = SpotifyHelper(this)
 
         processVideo()
     }
@@ -61,7 +68,8 @@ class ProcessingActivity : AppCompatActivity() {
             override fun onResponse(response: String) {
                 Log.d(TAG, "Gemini API Response: $response")
                 Toast.makeText(this@ProcessingActivity, "Done processing frames", Toast.LENGTH_SHORT).show()
-                // Proceed to next step or update UI
+                val songTitles = parseGeminiResponse(response)
+                createSpotifyPlaylist(songTitles)
             }
 
             override fun onError(throwable: Throwable) {
@@ -69,5 +77,34 @@ class ProcessingActivity : AppCompatActivity() {
                 Toast.makeText(this@ProcessingActivity, "Error: ${throwable.message}", Toast.LENGTH_SHORT).show()
             }
         })
+    }
+
+    private fun parseGeminiResponse(response: String): List<String> {
+        return response.split("\n").map { it.substringAfter(". ").trim() }
+    }
+
+    private fun createSpotifyPlaylist(songTitles: List<String>) {
+        GlobalScope.launch(Dispatchers.IO) {
+            try {
+                val accessToken = SharedPreferencesManager.getAccessToken(this@ProcessingActivity) ?: throw Exception("No access token found")
+                val userId = spotifyHelper.getUserId(accessToken)
+                val playlistId = spotifyHelper.createPlaylist(accessToken, userId, "MelodyMap Playlist")
+
+                val trackUris = songTitles.mapNotNull { title ->
+                    spotifyHelper.searchTrack(accessToken, title)
+                }
+
+                spotifyHelper.addTracksToPlaylist(accessToken, playlistId, trackUris)
+
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@ProcessingActivity, "Playlist created successfully", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error creating Spotify playlist", e)
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@ProcessingActivity, "Error creating Spotify playlist: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
     }
 }
