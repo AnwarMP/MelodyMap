@@ -1,5 +1,6 @@
 package com.hackathon.melodymap
 
+import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Bundle
 import android.util.Log
@@ -98,6 +99,7 @@ class ProcessingActivity : AppCompatActivity() {
 
                 withContext(Dispatchers.Main) {
                     Toast.makeText(this@ProcessingActivity, "Playlist created successfully", Toast.LENGTH_SHORT).show()
+                    navigateToPlaylistActivity(playlistId)
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Error creating Spotify playlist", e)
@@ -106,5 +108,11 @@ class ProcessingActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    private fun navigateToPlaylistActivity(playlistId: String) {
+        val intent = Intent(this, PlaylistActivity::class.java)
+        intent.putExtra("PLAYLIST_ID", playlistId)
+        startActivity(intent)
     }
 }

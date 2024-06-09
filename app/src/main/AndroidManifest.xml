@@ -37,10 +37,13 @@
                     android:scheme="melodymap"
                     android:host="callback" />
             </intent-filter>
+
         </activity>
         <activity android:name=".VideoCaptureActivity" />
         <activity android:name=".AddDetailsActivity" />
         <activity android:name=".ProcessingActivity" />
+        <activity android:name=".PlaylistActivity" />
+
 
     </application>
 
