@@ -1,3 +1,4 @@
+import com.android.build.api.dsl.Packaging
 import java.io.FileInputStream
 import java.util.Properties
 
@@ -47,6 +48,12 @@ android {
         viewBinding = true
         buildConfig = true // Enable BuildConfig fields
     }
+
+    packagingOptions {
+        resources {
+            excludes += setOf("META-INF/DEPENDENCIES", "META-INF/INDEX.LIST")
+        }
+    }
 }
 
 dependencies {
@@ -63,4 +70,12 @@ dependencies {
 
     implementation ("com.google.cloud:google-cloud-vision:3.43.0")
     implementation ("com.google.auth:google-auth-library-oauth2-http:1.0.0")
+    implementation ("com.google.cloud:google-cloud-vertexai:0.4.0")
+
+    implementation ("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
+
+    implementation("com.google.ai.client.generativeai:generativeai:0.1.2")
+    implementation("com.google.guava:guava:31.0.1-android")
+    implementation("org.reactivestreams:reactive-streams:1.0.4")
 }

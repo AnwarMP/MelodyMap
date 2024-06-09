@@ -15,4 +15,8 @@ object ConfigManager {
     fun getSpotifyClientId(): String {
         return properties.getProperty("SPOTIFY_CLIENT_ID") ?: ""
     }
+
+    fun getGeminiKey() : String {
+        return properties.getProperty("API_KEY") ?: ""
+    }
 }
