@@ -37,6 +37,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".VideoCaptureActivity" />
+        <activity android:name=".AddDetailsActivity" />
+        <activity android:name=".ProcessingActivity" />
     </application>
 
 </manifest>

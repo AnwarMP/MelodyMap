@@ -2,6 +2,7 @@ package com.hackathon.melodymap
 
 import android.Manifest
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.SurfaceTexture
 import android.hardware.camera2.*
@@ -10,7 +11,6 @@ import android.os.Bundle
 import android.util.Log
 import android.view.Surface
 import android.view.TextureView
-import android.view.View
 import android.widget.ImageButton
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -240,6 +240,10 @@ class VideoCaptureActivity : AppCompatActivity() {
             Log.d(TAG, "Video recording stopped. File saved at: ${videoFile.absolutePath}")
             Toast.makeText(this, "Video saved: ${videoFile.absolutePath}", Toast.LENGTH_SHORT).show()
             startPreview()
+
+            // Navigate to AddDetailsActivity
+            val intent = Intent(this, AddDetailsActivity::class.java)
+            startActivity(intent)
         } catch (e: Exception) {
             Log.e(TAG, "Exception during stopRecordingVideo: ${e.message}")
         }
