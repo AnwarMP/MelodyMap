@@ -2,7 +2,11 @@
     <!-- Base application theme. -->
     <style name="Base.Theme.MelodyMap" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <!-- Override the default background color -->
+        <item name="android:windowBackground">@color/white</item>
+        <item name="colorPrimary">@color/primaryColor</item>
+        <item name="colorPrimaryDark">@color/primaryDarkColor</item>
+        <item name="colorAccent">@color/accentColor</item>
     </style>
 
     <style name="Theme.MelodyMap" parent="Base.Theme.MelodyMap" />

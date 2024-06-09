@@ -3,4 +3,8 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="colorPrimary">#1DB954</color> <!-- Spotify Green -->
+    <color name="primaryColor">#6200EE</color> <!-- Replace with your desired primary color -->
+    <color name="primaryDarkColor">#3700B3</color> <!-- Replace with your desired primary dark color -->
+    <color name="accentColor">#03DAC5</color> <!-- Replace with your desired accent color -->
+
 </resources>
