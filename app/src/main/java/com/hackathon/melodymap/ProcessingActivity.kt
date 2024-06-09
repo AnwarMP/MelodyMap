@@ -56,7 +56,7 @@ class ProcessingActivity : AppCompatActivity() {
     }
 
     private fun generateTextPrompt(frames: List<Bitmap>, details: String) {
-        val query = "Details: $details Prompt: Describe the scene in these images and use the description to find 10 songs that match the context of the scene. Eg (Party scene - Drake Music). Give your answer in 1. 2. 3. format"
+        val query = "Details: $details\n\nPrompt: Extract as many keywords as possible from the scene and details provided. Using these keywords, find 10 existing songs that match the context of the scene. Provide the song titles in a numbered list format (1. Title, 2. Title, etc.). Ensure the output is clear and concise. ONLY provide the song titles in the given format NO OTHER INFORMATION"
         geminiProVision.getResponse(query, frames[0], frames[1], frames[2], frames[3], object : ResponseCallback {
             override fun onResponse(response: String) {
                 Log.d(TAG, "Gemini API Response: $response")
