@@ -1,64 +1,50 @@
 package com.hackathon.melodymap
 
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
 import android.widget.EditText
-import android.widget.ImageButton
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 
 class AddDetailsActivity : AppCompatActivity() {
 
-    private lateinit var detailsEditText: EditText
-    private val PREFS_NAME = "com.hackathon.melodymap"
-    private val DETAILS_KEY = "details_key"
+    companion object {
+        private const val TAG = "AddDetailsActivity"
+    }
+
+    private lateinit var detailsInput: EditText
+    private lateinit var submitButton: Button
+    private var videoFilePath: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add_details)
 
-        val homeButton = findViewById<ImageButton>(R.id.homeButton)
-        detailsEditText = findViewById(R.id.detailsEditText)
-        val submitButton = findViewById<Button>(R.id.submitButton)
+        Log.d(TAG, "onCreate called")
 
-        // Load saved details if they exist
-        loadDetails()
+        detailsInput = findViewById(R.id.detailsEditText)
+        submitButton = findViewById(R.id.submitButton)
 
-        homeButton.setOnClickListener {
-            finish() // Go back to the previous activity
+        videoFilePath = intent.getStringExtra("VIDEO_FILE_PATH")
+        if (videoFilePath == null) {
+            Log.e(TAG, "No video file path provided in intent")
+            Toast.makeText(this, "No video file path provided", Toast.LENGTH_SHORT).show()
+            finish()
         }
 
         submitButton.setOnClickListener {
-            val details = detailsEditText.text.toString()
-            if (details.isNotBlank()) {
-                // Save the details
-                saveDetails(details)
-                Toast.makeText(this, "Details submitted and saved!", Toast.LENGTH_SHORT).show()
-
-                // Navigate to ProcessingActivity
-                val intent = Intent(this, ProcessingActivity::class.java)
-                startActivity(intent)
-
+            val details = detailsInput.text.toString()
+            if (details.isEmpty()) {
+                Toast.makeText(this, "Please enter details", Toast.LENGTH_SHORT).show()
             } else {
-                Toast.makeText(this, "Please add some details before submitting.", Toast.LENGTH_SHORT).show()
+                Log.d(TAG, "Details entered: $details")
+                val intent = Intent(this, ProcessingActivity::class.java)
+                intent.putExtra("VIDEO_FILE_PATH", videoFilePath)
+                intent.putExtra("DETAILS", details)
+                startActivity(intent)
             }
-        }
-    }
-
-    private fun saveDetails(details: String) {
-        val sharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        val editor = sharedPreferences.edit()
-        editor.putString(DETAILS_KEY, details)
-        editor.apply()
-    }
-
-    private fun loadDetails() {
-        val sharedPreferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        val savedDetails = sharedPreferences.getString(DETAILS_KEY, "")
-        if (!savedDetails.isNullOrBlank()) {
-            detailsEditText.setText(savedDetails)
         }
     }
 }

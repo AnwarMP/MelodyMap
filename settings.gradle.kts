@@ -16,9 +16,12 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        maven ("https://jitpack.io" )
     }
 }
 
 rootProject.name = "MelodyMap"
+//include(":app", ":opencv")
 include(":app")
+
  

@@ -60,4 +60,7 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     implementation("com.spotify.android:auth:1.2.5")
+
+    implementation ("com.google.cloud:google-cloud-vision:3.43.0")
+    implementation ("com.google.auth:google-auth-library-oauth2-http:1.0.0")
 }

@@ -239,10 +239,10 @@ class VideoCaptureActivity : AppCompatActivity() {
             recordButton.setImageResource(R.drawable.ic_record)  // Change icon back to record
             Log.d(TAG, "Video recording stopped. File saved at: ${videoFile.absolutePath}")
             Toast.makeText(this, "Video saved: ${videoFile.absolutePath}", Toast.LENGTH_SHORT).show()
-            startPreview()
 
-            // Navigate to AddDetailsActivity
+            // Move to AddDetailsActivity
             val intent = Intent(this, AddDetailsActivity::class.java)
+            intent.putExtra("VIDEO_FILE_PATH", videoFile.absolutePath)
             startActivity(intent)
         } catch (e: Exception) {
             Log.e(TAG, "Exception during stopRecordingVideo: ${e.message}")

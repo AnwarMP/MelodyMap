@@ -4,24 +4,23 @@
     android:layout_height="match_parent"
     tools:context=".ProcessingActivity">
 
-    <!-- Processing Spinner -->
+    <!-- Other views -->
+
     <ProgressBar
         android:id="@+id/progressBar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
-        style="?android:attr/progressBarStyleLarge" />
+        android:visibility="visible"/>
 
-    <!-- Done Button -->
     <Button
         android:id="@+id/doneButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/progressBar"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="16dp"
-        android:background="@android:color/darker_gray"
-        android:text="DONE"
-        android:enabled="false" />
-
+        android:layout_marginTop="20dp"
+        android:text="Done"
+        android:enabled="false"
+        android:backgroundTint="#808080" /> <!-- Initially gray -->
 </RelativeLayout>
