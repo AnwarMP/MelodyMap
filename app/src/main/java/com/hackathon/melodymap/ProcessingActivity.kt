@@ -1,10 +1,11 @@
 package com.hackathon.melodymap
 
+import android.graphics.Bitmap
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.hackathon.melodymap.utils.GeminiPro
+import com.hackathon.melodymap.utils.GeminiProVision
 import com.hackathon.melodymap.utils.ResponseCallback
 
 class ProcessingActivity : AppCompatActivity() {
@@ -15,7 +16,7 @@ class ProcessingActivity : AppCompatActivity() {
 
     private var videoFilePath: String? = null
     private var details: String? = null
-    private lateinit var geminiPro: GeminiPro
+    private lateinit var geminiProVision: GeminiProVision
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,30 +37,27 @@ class ProcessingActivity : AppCompatActivity() {
         Log.d(TAG, "Video file path: $videoFilePath")
         Log.d(TAG, "Details: $details")
 
-        // Initialize the Gemini helper
-        geminiPro = GeminiPro()
+        geminiProVision = GeminiProVision()
 
-        // Start processing the video
         processVideo()
     }
 
     private fun processVideo() {
         Log.d(TAG, "Starting video processing")
 
-        // Create the prompt from video frames and details
-        val textPrompt = "Analyze these images and details: $details"
-
-        // Replace with actual logic to extract frames and append to prompt
-        // val frames = extractFrames(videoFilePath)
-        // for (frame in frames) {
-        //     textPrompt += "\nImage: [Base64-encoded image data]"
-        // }
-
-        generateTextPrompt(textPrompt)
+        val videoProcesser = VideoProcesser()
+        videoProcesser.processVideo(this, videoFilePath!!) { frames ->
+            if (frames.size >= 4) {
+                generateTextPrompt(frames.subList(0, 4), details ?: "")
+            } else {
+                Log.e(TAG, "Not enough frames extracted from video")
+            }
+        }
     }
 
-    private fun generateTextPrompt(prompt: String) {
-        geminiPro.getResponse(prompt, object : ResponseCallback {
+    private fun generateTextPrompt(frames: List<Bitmap>, details: String) {
+        val query = "Details: $details Prompt: Describe the scene in these images and use the description to find 10 songs that match the context of the scene. Eg (Party scene - Drake Music). Give your answer in 1. 2. 3. format"
+        geminiProVision.getResponse(query, frames[0], frames[1], frames[2], frames[3], object : ResponseCallback {
             override fun onResponse(response: String) {
                 Log.d(TAG, "Gemini API Response: $response")
                 Toast.makeText(this@ProcessingActivity, "Done processing frames", Toast.LENGTH_SHORT).show()
@@ -67,7 +65,7 @@ class ProcessingActivity : AppCompatActivity() {
             }
 
             override fun onError(throwable: Throwable) {
-                Log.e(TAG, "Error response from Gemini API: ${throwable.message}")
+                Log.e(TAG, "Error response from Gemini API", throwable)
                 Toast.makeText(this@ProcessingActivity, "Error: ${throwable.message}", Toast.LENGTH_SHORT).show()
             }
         })

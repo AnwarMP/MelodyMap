@@ -1,6 +1,7 @@
 package com.hackathon.melodymap.utils;
 
-import android.util.Base64;
+
+import android.graphics.Bitmap;
 
 import com.google.ai.client.generativeai.GenerativeModel;
 import com.google.ai.client.generativeai.java.GenerativeModelFutures;
@@ -16,14 +17,19 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.hackathon.melodymap.ConfigManager;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.Executor;
 
-public class GeminiPro {
-    public void getResponse(String query, ResponseCallback callback) {
+public class GeminiProVision {
+    public void getResponse(String query, Bitmap image, Bitmap image2, Bitmap image1, Bitmap image3, ResponseCallback callback) {
         GenerativeModelFutures model = getModel();
 
-        Content content = new Content.Builder().addText(query).build();
+        Content content = new Content.Builder()
+                .addText(query)
+                .addImage(image)
+                .addImage(image1)
+                .addImage(image2)
+                .addImage(image3)
+                .build();
         Executor executor = Runnable::run;
 
         ListenableFuture<GenerateContentResponse> response = model.generateContent(content);
@@ -40,40 +46,13 @@ public class GeminiPro {
                 callback.onError(throwable);
             }
         }, executor);
+
     }
-
-    public void getResponseWithImages(List<String> base64Images, String details, ResponseCallback callback) {
-        GenerativeModelFutures model = getModel();
-
-        StringBuilder queryBuilder = new StringBuilder();
-        queryBuilder.append("Analyze these images and details: ").append(details);
-        for (String image : base64Images) {
-            queryBuilder.append("\nImage: ").append(image);
-        }
-
-        Content content = new Content.Builder().addText(queryBuilder.toString()).build();
-        Executor executor = Runnable::run;
-
-        ListenableFuture<GenerateContentResponse> response = model.generateContent(content);
-        Futures.addCallback(response, new FutureCallback<GenerateContentResponse>() {
-            @Override
-            public void onSuccess(GenerateContentResponse result) {
-                String resultText = result.getText();
-                callback.onResponse(resultText);
-            }
-
-            @Override
-            public void onFailure(Throwable throwable) {
-                throwable.printStackTrace();
-                callback.onError(throwable);
-            }
-        }, executor);
-    }
-
     private GenerativeModelFutures getModel() {
         String apiKey = ConfigManager.INSTANCE.getGeminiKey();
 
-        SafetySetting harassmentSafety = new SafetySetting(HarmCategory.HARASSMENT, BlockThreshold.ONLY_HIGH);
+        SafetySetting harassmentSafety = new SafetySetting(HarmCategory.HARASSMENT,
+                BlockThreshold.ONLY_HIGH);
 
         GenerationConfig.Builder configBuilder = new GenerationConfig.Builder();
         configBuilder.temperature = 0.9f;
@@ -82,16 +61,12 @@ public class GeminiPro {
         GenerationConfig generationConfig = configBuilder.build();
 
         GenerativeModel gm = new GenerativeModel(
-                "gemini-pro",
+                "gemini-pro-vision",
                 apiKey,
                 generationConfig,
                 Collections.singletonList(harassmentSafety)
         );
 
         return GenerativeModelFutures.from(gm);
-    }
-
-    public static String encodeImageToBase64(byte[] imageBytes) {
-        return Base64.encodeToString(imageBytes, Base64.NO_WRAP);
     }
 }
